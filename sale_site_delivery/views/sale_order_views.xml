@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Sales order views extended with the Site field.
+-->
+<odoo>
+
+    <!-- Sales order form: add Site below the customer and its addresses -->
+    <record id="sale_order_view_form_inherit_site" model="ir.ui.view">
+        <field name="name">sale.order.view.form.inherit.site</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <group name="partner_details" position="inside">
+                <!-- Sites are created from Contacts > Sites, not from the order -->
+                <field name="site_id" options="{'no_create': True}"/>
+            </group>
+        </field>
+    </record>
+
+    <!-- Sales order search: search and group orders by site -->
+    <record id="sale_order_view_search_inherit_site" model="ir.ui.view">
+        <field name="name">sale.order.view.search.inherit.site</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_sales_order_filter"/>
+        <field name="arch" type="xml">
+            <field name="partner_id" position="after">
+                <field name="site_id"/>
+            </field>
+            <xpath expr="//group" position="inside">
+                <filter name="group_site" string="Site" context="{'group_by': 'site_id'}"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
