@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_contact_site_user,contact.site user,model_contact_site,base.group_user,1,1,1,0
+access_contact_site_admin,contact.site admin,model_contact_site,base.group_system,1,1,1,1

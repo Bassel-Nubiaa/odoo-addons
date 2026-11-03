@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Views, action and menu for Sites (contact.site).
+    Adds a "Sites" menu to the Contacts app.
+-->
+<odoo>
+
+    <!-- List view: one line per site -->
+    <record id="contact_site_view_tree" model="ir.ui.view">
+        <field name="name">contact.site.view.tree</field>
+        <field name="model">contact.site</field>
+        <field name="arch" type="xml">
+            <tree string="Sites">
+                <field name="name"/>
+                <field name="owner_id"/>
+                <field name="subcontractor_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form view: the site card -->
+    <record id="contact_site_view_form" model="ir.ui.view">
+        <field name="name">contact.site.view.form</field>
+        <field name="model">contact.site</field>
+        <field name="arch" type="xml">
+            <form string="Site">
+                <sheet>
+                    <!-- Empty on purpose: sale_site_delivery adds the Sales Orders smart button here -->
+                    <div class="oe_button_box" name="button_box"/>
+
+                    <!-- Red "Archived" banner, shown only when the site is archived -->
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <field name="active" invisible="1"/>
+
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. 1024"/></h1>
+                    </div>
+
+                    <!-- Each field becomes required while the other one is empty -->
+                    <group>
+                        <group>
+                            <field name="owner_id" required="not subcontractor_id"/>
+                            <field name="subcontractor_id" required="not owner_id"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Notes" name="notes">
+                            <field name="notes" placeholder="Access instructions, landmarks, contact on site..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search view: searching "Contact" matches both owner and subcontractor -->
+    <record id="contact_site_view_search" model="ir.ui.view">
+        <field name="name">contact.site.view.search</field>
+        <field name="model">contact.site</field>
+        <field name="arch" type="xml">
+            <search string="Sites">
+                <field name="name"/>
+                <field name="owner_id" string="Contact"
+                       filter_domain="['|', ('owner_id', 'ilike', self), ('subcontractor_id', 'ilike', self)]"/>
+                <separator/>
+                <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_owner" string="Owner" context="{'group_by': 'owner_id'}"/>
+                    <filter name="group_subcontractor" string="Subcontractor" context="{'group_by': 'subcontractor_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action: opens the list and form views -->
+    <record id="contact_site_action" model="ir.actions.act_window">
+        <field name="name">Sites</field>
+        <field name="res_model">contact.site</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create your first site</p>
+            <p>A site is a piece of land linked to an owner or a subcontractor.</p>
+        </field>
+    </record>
+
+    <!-- Menu: Contacts > Sites -->
+    <menuitem id="contact_site_menu"
+              name="Sites"
+              parent="contacts.menu_contacts"
+              action="contact_site_action"
+              sequence="5"/>
+
+</odoo>
