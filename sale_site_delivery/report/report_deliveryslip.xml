@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Delivery slip extended with the site details.
+-->
+<odoo>
+
+    <!-- Add a "Site" block next to the Order and Shipping Date blocks -->
+    <template id="report_delivery_document_inherit_site" inherit_id="stock.report_delivery_document">
+        <xpath expr="//div[@name='div_origin']" position="after">
+            <div t-if="o.site_id" class="col-auto" name="div_site">
+                <strong>Site:</strong>
+                <p class="m-0" t-field="o.site_id"/>
+                <p class="m-0" t-if="o.site_id.owner_id">
+                    Owner: <span t-field="o.site_id.owner_id"/>
+                </p>
+                <p class="m-0" t-if="o.site_id.subcontractor_id">
+                    Subcontractor: <span t-field="o.site_id.subcontractor_id"/>
+                </p>
+                <p class="m-0 text-muted" t-if="o.site_id.notes" t-field="o.site_id.notes"/>
+            </div>
+        </xpath>
+    </template>
+
+</odoo>
