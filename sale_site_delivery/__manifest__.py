@@ -7,9 +7,11 @@
     "website": "https://github.com/Bassel-Nubiaa/odoo-addons",
     "license": "LGPL-3",
     "depends": ["contact_site", "sale_management"],
+    
     "data": [
+        "views/contact_site_views.xml",
         "views/sale_order_views.xml",
-    ],
+    ],    
     "installable": True,
     "application": False,
 }
