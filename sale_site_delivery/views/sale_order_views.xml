@@ -58,6 +58,15 @@
                        readonly="is_source_locked"
                        domain="[('id', 'in', allowed_vendor_ids)]"
                        options="{'no_create': True}"/>
+                <field name="delivered_by_id"
+                       optional="show"
+                       invisible="display_type or product_type == 'service'"
+                       required="not display_type and product_type != 'service'"
+                       readonly="is_source_locked"
+                       options="{'no_create': True}"/>
+                <field name="delivered_by_is_employee"
+                       optional="show"
+                       invisible="display_type or not delivered_by_id"/>                       
             </xpath>
         </field>
     </record>

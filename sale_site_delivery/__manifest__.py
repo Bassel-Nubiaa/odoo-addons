@@ -6,9 +6,16 @@
     "author": "Bassel Nubiaa",
     "website": "https://github.com/Bassel-Nubiaa/odoo-addons",
     "license": "LGPL-3",
-    "depends": ["contact_site", "sale_management", "sale_stock", "stock_dropshipping"],    
+    "depends": [
+        "contact_site",
+        "hr",
+        "sale_management",
+        "sale_stock",
+        "stock_dropshipping",
+    ],
     "data": [
         "views/contact_site_views.xml",
+        "views/purchase_order_views.xml",
         "views/sale_order_views.xml",
         "views/stock_picking_views.xml",
         "report/report_deliveryslip.xml",

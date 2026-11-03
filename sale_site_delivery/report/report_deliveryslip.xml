@@ -18,6 +18,11 @@
                 </p>
                 <p class="m-0 text-muted" t-if="o.site_id.notes" t-field="o.site_id.notes"/>
             </div>
+            
+            <div t-if="o.delivered_by_id" class="col-auto" name="div_delivered_by">
+                <strong>Delivered By:</strong>
+                <p class="m-0" t-field="o.delivered_by_id"/>
+            </div>            
         </xpath>
     </template>
 

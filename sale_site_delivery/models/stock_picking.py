@@ -23,3 +23,8 @@ class StockPicking(models.Model):
         string="Site",
         index=True,
     )
+    
+    # Set from the stock moves; can be changed if another driver takes over.
+    delivered_by_id = fields.Many2one(
+        "res.partner", string="Delivered By", index=True, tracking=True
+    )    

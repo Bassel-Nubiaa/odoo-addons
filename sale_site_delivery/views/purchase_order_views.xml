@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Purchase order views extended with the driver of dropship orders.
+-->
+<odoo>
+
+    <!-- Purchase order form: show the driver below the vendor reference -->
+    <record id="purchase_order_view_form_inherit_delivered_by" model="ir.ui.view">
+        <field name="name">purchase.order.view.form.inherit.delivered.by</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            <field name="partner_ref" position="after">
+                <field name="delivered_by_id" invisible="not delivered_by_id"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>

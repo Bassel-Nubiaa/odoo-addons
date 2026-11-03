@@ -12,6 +12,7 @@
         <field name="arch" type="xml">
             <field name="partner_id" position="after">
                 <field name="site_id" invisible="not site_id"/>
+                <field name="delivered_by_id" invisible="not delivered_by_id"/>                
             </field>
         </field>
     </record>
@@ -24,9 +25,11 @@
         <field name="arch" type="xml">
             <field name="partner_id" position="after">
                 <field name="site_id"/>
+                <field name="delivered_by_id"/>                
             </field>
             <xpath expr="//group" position="inside">
                 <filter name="group_site" string="Site" context="{'group_by': 'site_id'}"/>
+                <filter name="group_delivered_by" string="Delivered By" context="{'group_by': 'delivered_by_id'}"/>                
             </xpath>
         </field>
     </record>

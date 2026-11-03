@@ -45,6 +45,10 @@ class SaleOrderLine(models.Model):
     # Once deliveries or purchase lines exist, the source can no longer change.
     is_source_locked = fields.Boolean(compute="_compute_is_source_locked")
 
+    # Any contact can deliver; employees are detected through the Employees app.
+    delivered_by_id = fields.Many2one("res.partner", string="Delivered By")
+    delivered_by_is_employee = fields.Boolean(
+        string="Employee", compute="_compute_delivered_by_is_employee")
     # -------------------------------------------------------------------------
     # Compute methods
     # -------------------------------------------------------------------------
@@ -69,6 +73,17 @@ class SaleOrderLine(models.Model):
         """Lock the source once the line has generated stock moves or purchases."""
         for line in self:
             line.is_source_locked = bool(line.move_ids or line.sudo().purchase_line_ids)
+
+    @api.depends("delivered_by_id")
+    def _compute_delivered_by_is_employee(self):
+        """Flag lines delivered by a contact linked to an employee."""
+        employees = self.env["hr.employee"].sudo().search(
+            [("work_contact_id", "in", self.delivered_by_id.ids)]
+        )
+        for line in self:
+            line.delivered_by_is_employee = bool(
+                line.delivered_by_id
+                and line.delivered_by_id in employees.work_contact_id)            
 
     # -------------------------------------------------------------------------
     # Onchange
@@ -125,6 +140,7 @@ class SaleOrderLine(models.Model):
         elif self.source_type == "dropship":
             values["route_ids"] = self.env.ref("stock_dropshipping.route_drop_shipping")
             values["supplierinfo_id"] = self._get_dropship_seller()
+        values["delivered_by_id"] = self.delivered_by_id.id
         return values
 
     def _get_dropship_seller(self):
