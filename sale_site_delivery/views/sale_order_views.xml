@@ -31,5 +31,34 @@
             </xpath>
         </field>
     </record>
+    <!-- Order lines: choose the source of each line (warehouse or dropship) -->
+    <record id="sale_order_view_form_inherit_line_source" model="ir.ui.view">
+        <field name="name">sale.order.view.form.inherit.line.source</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='order_line']/tree/field[@name='analytic_distribution']" position="after">
+                <!-- Helper fields used by the conditions below; never displayed -->
+                <field name="allowed_vendor_ids" column_invisible="True"/>
+                <field name="is_source_locked" column_invisible="True"/>
 
+                <field name="source_type"
+                       optional="show"
+                       invisible="display_type or product_type == 'service'"
+                       readonly="is_source_locked"/>
+                <field name="source_warehouse_id"
+                       optional="show"
+                       invisible="display_type or source_type != 'warehouse' or product_type == 'service'"
+                       readonly="is_source_locked"
+                       options="{'no_create': True}"/>
+                <field name="dropship_vendor_id"
+                       optional="show"
+                       invisible="display_type or source_type != 'dropship'"
+                       required="not display_type and source_type == 'dropship'"
+                       readonly="is_source_locked"
+                       domain="[('id', 'in', allowed_vendor_ids)]"
+                       options="{'no_create': True}"/>
+            </xpath>
+        </field>
+    </record>
 </odoo>
