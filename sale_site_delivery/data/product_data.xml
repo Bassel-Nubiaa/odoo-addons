@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Shipping service sold on sales orders and purchased from shipping companies.
+    Its income and expense accounts can be set separately to track shipping profit.
+-->
+<odoo>
+    <!-- noupdate: price and accounts set by the user are kept on module upgrades -->
+    <data noupdate="1">
+
+        <record id="product_shipping" model="product.product">
+            <field name="name">Shipping</field>
+            <field name="default_code">SHIP</field>
+            <field name="detailed_type">service</field>
+            <field name="sale_ok" eval="True"/>
+            <field name="purchase_ok" eval="True"/>
+            <field name="invoice_policy">order</field>
+            <!-- RFQs are created by "Confirm Shipping Details", not automatically -->
+            <field name="service_to_purchase" eval="False"/>
+            <field name="list_price">0.0</field>
+        </record>
+
+    </data>
+</odoo>

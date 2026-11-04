@@ -14,12 +14,14 @@
         "stock_dropshipping",
     ],
     "data": [
+        "security/ir.model.access.csv",
+        "data/product_data.xml",
         "views/contact_site_views.xml",
         "views/purchase_order_views.xml",
         "views/sale_order_views.xml",
         "views/stock_picking_views.xml",
         "report/report_deliveryslip.xml",
-    ],   
+    ],  
     "installable": True,
     "application": False,
 }

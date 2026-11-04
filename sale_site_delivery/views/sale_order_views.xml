@@ -60,14 +60,74 @@
                        options="{'no_create': True}"/>
                 <field name="delivered_by_id"
                        optional="show"
-                       invisible="display_type or product_type == 'service'"
+                       invisible="display_type or (product_type == 'service' and not is_shipping_line)"                       
                        required="not display_type and product_type != 'service'"
                        readonly="is_source_locked"
                        options="{'no_create': True}"/>
+                <field name="is_shipping_line" column_invisible="True"/>
+
                 <field name="delivered_by_is_employee"
                        optional="show"
-                       invisible="display_type or not delivered_by_id"/>                       
+                       invisible="display_type or not delivered_by_id"/>  
+                <field name="is_shipping_line" column_invisible="True"/>
+
             </xpath>
+        </field>
+    </record>
+
+        <!-- Sales order: shipping review buttons, Confirm only after the review, and the Shipping tab -->
+    <record id="sale_order_view_form_inherit_shipping_review" model="ir.ui.view">
+        <field name="name">sale.order.view.form.inherit.shipping.review</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@id='action_confirm']" position="before">
+                <button name="action_confirm_shipping"
+                        type="object"
+                        string="Confirm Shipping Details"
+                        class="btn-primary"
+                        invisible="state not in ('draft', 'sent') or shipping_reviewed or not shipping_review_required"/>
+                <button name="action_reset_shipping"
+                        type="object"
+                        string="Reset Shipping"
+                        invisible="state not in ('draft', 'sent') or not shipping_reviewed"
+                        confirm="This cancels the deliveries and purchase orders created for this quotation. Continue?"/>
+            </xpath>
+
+            <!-- Standard Confirm buttons: one for sent quotations, one for drafts -->
+            <xpath expr="//header/button[@id='action_confirm']" position="attributes">
+                <attribute name="invisible">state != 'sent' or (shipping_review_required and not shipping_reviewed)</attribute>
+            </xpath>
+            <xpath expr="//header/button[@name='action_confirm' and not(@id)]" position="attributes">
+                <attribute name="invisible">state != 'draft' or (shipping_review_required and not shipping_reviewed)</attribute>
+            </xpath>
+
+            <group name="partner_details" position="inside">
+                <field name="shipping_review_required" invisible="1"/>
+                <field name="shipping_reviewed" invisible="not shipping_review_required"/>
+            </group>
+
+            <!-- Shipping tab: the final overview before confirming the order -->
+            <page name="order_lines" position="after">
+                <page string="Shipping" name="shipping" invisible="not shipping_review_required">
+                    <p class="text-muted" invisible="shipping_reviewed">
+                        Click Confirm Shipping Details to prepare the deliveries and review them here.
+                    </p>
+                    <field name="shipping_group_ids" invisible="not shipping_reviewed" readonly="1">
+                        <tree>
+                            <field name="group_type"/>
+                            <field name="source_name"/>
+                            <field name="delivered_by_id"/>
+                            <field name="is_employee"/>
+                            <field name="shipping_partner_id"/>
+                            <field name="product_ids" widget="many2many_tags"/>
+                            <field name="picking_id"/>
+                            <field name="purchase_id" groups="purchase.group_purchase_user"/>
+                            <field name="shipping_purchase_id" groups="purchase.group_purchase_user"/>
+                        </tree>
+                    </field>
+                </page>
+            </page>
         </field>
     </record>
 </odoo>

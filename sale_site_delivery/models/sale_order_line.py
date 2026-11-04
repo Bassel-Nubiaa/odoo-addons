@@ -1,7 +1,9 @@
 """Sales order line extension: choose where each line is supplied from."""
 
 from odoo import _, api, fields, models
-from odoo.exceptions import ValidationError
+from odoo.exceptions import UserError, ValidationError
+from odoo.tools import float_compare
+
 
 
 class SaleOrderLine(models.Model):
@@ -49,6 +51,11 @@ class SaleOrderLine(models.Model):
     delivered_by_id = fields.Many2one("res.partner", string="Delivered By")
     delivered_by_is_employee = fields.Boolean(
         string="Employee", compute="_compute_delivered_by_is_employee")
+    
+    # True for the Shipping service line, which may also carry a Delivered By.
+    is_shipping_line = fields.Boolean(compute="_compute_is_shipping_line")    
+    
+    
     # -------------------------------------------------------------------------
     # Compute methods
     # -------------------------------------------------------------------------
@@ -84,6 +91,15 @@ class SaleOrderLine(models.Model):
             line.delivered_by_is_employee = bool(
                 line.delivered_by_id
                 and line.delivered_by_id in employees.work_contact_id)            
+
+    @api.depends("product_id")
+    def _compute_is_shipping_line(self):
+        """Identify lines selling the module's Shipping product."""
+        shipping_product = self.env.ref(
+            "sale_site_delivery.product_shipping", raise_if_not_found=False
+        )
+        for line in self:
+            line.is_shipping_line = bool(shipping_product) and line.product_id == shipping_product
 
     # -------------------------------------------------------------------------
     # Onchange
@@ -159,3 +175,100 @@ class SaleOrderLine(models.Model):
         return seller or self.product_id.seller_ids.filtered(
             lambda s: s.partner_id == self.dropship_vendor_id
         )[:1]
+    # -------------------------------------------------------------------------
+    # CRUD: lock goods lines once shipping details are confirmed
+    # -------------------------------------------------------------------------
+
+    # Changing any of these after the review would desynchronize the order
+    # from the deliveries and purchase orders already created.
+    _SHIPPING_LOCKED_FIELDS = {
+        "product_id",
+        "product_template_id",
+        "product_uom_qty",
+        "product_uom",
+        "source_type",
+        "source_warehouse_id",
+        "dropship_vendor_id",
+        "delivered_by_id",
+    }
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Block adding goods lines to a quotation whose shipping is confirmed."""
+        lines = super().create(vals_list)
+        lines._check_shipping_not_reviewed()
+        return lines
+
+    def write(self, vals):
+        """Block changing locked fields of goods lines after the shipping review."""
+        if self._SHIPPING_LOCKED_FIELDS & set(vals):
+            self._check_shipping_not_reviewed()
+        return super().write(vals)
+
+    def unlink(self):
+        """Block removing goods lines after the shipping review."""
+        self._check_shipping_not_reviewed()
+        return super().unlink()
+
+    def _check_shipping_not_reviewed(self):
+        """Raise an error for goods lines of quotations with reviewed shipping."""
+        locked_lines = self.filtered(
+            lambda line: line.order_id.shipping_reviewed
+            and line.order_id.state in ("draft", "sent")
+            and line.product_type in ("consu", "product")
+        )
+        if locked_lines:
+            raise UserError(
+                _(
+                    "The shipping details of %s are confirmed. "
+                    "Click Reset Shipping to change products, quantities, "
+                    "sources or drivers.",
+                    locked_lines.order_id[:1].name,
+                )
+            )
+
+    # -------------------------------------------------------------------------
+    # Early procurement
+    # -------------------------------------------------------------------------
+
+    def _launch_early_procurement(self):
+        """Create deliveries and dropship purchase orders before confirmation.
+
+        Mirrors sale_stock's _action_launch_stock_rule, which skips lines of
+        unconfirmed orders. Shipping details are agreed before the customer
+        confirms, so procurement is launched from the quotation instead. When
+        the order is confirmed, the standard method finds the quantities
+        already procured and creates nothing new.
+        """
+        precision = self.env["decimal.precision"].precision_get("Product Unit of Measure")
+        procurements = []
+        for line in self:
+            line = line.with_company(line.company_id)
+            if line.display_type or line.product_id.type not in ("consu", "product"):
+                continue
+            procured_qty = line._get_qty_procurement(False)
+            if float_compare(procured_qty, line.product_uom_qty, precision_digits=precision) >= 0:
+                continue
+
+            group = line._get_procurement_group()
+            if not group:
+                group = self.env["procurement.group"].create(
+                    line._prepare_procurement_group_vals()
+                )
+                line.order_id.procurement_group_id = group
+
+            values = line._prepare_procurement_values(group_id=group)
+            product_qty, procurement_uom = line.product_uom._adjust_uom_quantities(
+                line.product_uom_qty - procured_qty, line.product_id.uom_id
+            )
+            procurements.append(line._create_procurement(product_qty, procurement_uom, values))
+
+        if procurements:
+            self.env["procurement.group"].run(procurements)
+
+        # Same as the standard method: confirming the deliveries triggers reservation.
+        pickings = self.order_id.picking_ids.filtered(
+            lambda picking: picking.state not in ("cancel", "done")
+        )
+        if pickings:
+            pickings.action_confirm()    
