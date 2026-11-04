@@ -16,8 +16,7 @@ distribution, and service operations.
 
 | Module | Description | Compatibility |
 |--------|-------------|---------------|
-| [contact_site](contact_site) | Land sites linked to an owner or a subcontractor | 
-Community, Enterprise |
+| [contact_site](contact_site) | Land sites linked to an owner or a subcontractor | Community, Enterprise |
 | [sale_site_delivery](sale_site_delivery) | Site-based deliveries with per-line sourcing, drivers and shipping review | Community, Enterprise |
 
 Modules whose compatibility is *Enterprise* require Odoo Enterprise applications,
