@@ -1,8 +1,12 @@
-# Odoo Addons
+# Odoo Multi-Site Delivery
 
-Custom Odoo modules developed by Bassel Nubiaa, based on business requirements
-from Odoo implementation projects in construction, gold retail, trading and
-distribution, and service operations.
+Odoo modules for trading and distribution companies that deliver goods to land
+sites. Each sales order line is supplied from a chosen warehouse or dropshipped,
+delivered by an employee or a third-party shipping company, and the shipping is
+reviewed before the order is confirmed.
+
+Developed by Bassel Nubiaa, based on an Odoo implementation project for a
+trading and distribution company.
 
 ## Branches
 
@@ -25,12 +29,13 @@ which are not included in this repository.
 ## Installation
 
 ```bash
-git clone -b 17.0 https://github.com/Bassel-Nubiaa/odoo-addons.git
+git clone -b 17.0 https://github.com/Bassel-Nubiaa/odoo-multi-site-delivery.git
 ```
 
 Replace `17.0` with the branch corresponding to the target Odoo version. Add the
 cloned directory to the `addons_path` of the Odoo instance, restart the server,
-update the Apps list, and install the required modules.
+update the Apps list, and install `sale_site_delivery`; `contact_site` is
+installed with it.
 
 ## License
 
