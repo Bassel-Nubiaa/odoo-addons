@@ -10,11 +10,11 @@ trading and distribution company.
 
 ## Branches
 
-| Branch | Odoo version |
-|--------|--------------|
-| `17.0` | 17.0         |
-| `18.0` | 18.0         |
-| `19.0` | 19.0         |
+| Branch | Odoo version | Status |
+|--------|--------------|--------|
+| `17.0` | 17.0         | Available |
+| `18.0` | 18.0         | Coming soon |
+| `19.0` | 19.0         | Coming soon |
 
 ## Modules
 
